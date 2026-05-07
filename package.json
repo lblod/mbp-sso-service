@@ -1,0 +1,7 @@
+{
+    "name": "mbp-sso-service",
+    "version": "1.0.0",
+    "dependencies": {
+        "cookie-parser": "^1.4.6"
+    }
+}

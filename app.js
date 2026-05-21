@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import { introspectAndValidate } from './lib/acm.js';
 import { storeHandoverToken, redeemHandoverToken } from './lib/handover.js';
 import { ensureUserAccount, createSession, deleteSession } from './lib/session.js';
+import express from 'express';
 
 app.use(cookieParser());
 app.use(express.json());

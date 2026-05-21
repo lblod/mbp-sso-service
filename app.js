@@ -5,6 +5,7 @@ import { storeHandoverToken, redeemHandoverToken } from './lib/handover.js';
 import { ensureUserAccount, createSession, deleteSession } from './lib/session.js';
 
 app.use(cookieParser());
+app.use(express.json());
 
 // Called by MBP backend: exchange ACM access token for a short-lived handover token.
 app.post('/auth/v1/token', async function(req, res) {

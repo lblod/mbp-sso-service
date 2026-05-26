@@ -129,8 +129,11 @@ Sessions and accounts are stored in `<http://mu.semte.ch/graphs/sessions>`.
   a foaf:OnlineAccount ;
   mu:uuid "{uuid}" ;
   ext:acmId "{acm-sub}" ;
-  foaf:accountName "{preferred_username}" .
+  foaf:accountName "{preferred_username}" ;
+  ext:rijksregisternummer "{rrn}" .         # only present when the rrn claim is in the token
 ```
+
+The `rrn` claim must be released by ACM/IDM in the token introspection response — this requires the client to be configured with a scope that exposes it (e.g. the `vo` scope on Vlaanderen ACM/IDM). When the claim is missing, the account is stored without an RRN and the field is back-filled on the next login that does carry the claim. Downstream services (e.g. `mbp-notification-service`) read the RRN from this graph to address MBP-inbox notifications.
 
 **Session**
 ```

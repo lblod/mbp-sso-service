@@ -49,22 +49,19 @@ app.post('/auth/v1/exchange', async function(req, res) {
     return res.status(401).json({ error: 'Invalid or expired handover token' });
   }
 
-  try {
-    const sessionId = await createSession(tokenData.accountUri);
+  const sessionUri = req.headers['mu-session-id'];
+  if (!sessionUri) {
+    return res.status(500).json({ error: 'No session URI from mu-identifier' });
+  }
 
-    res.cookie('mu_session_id', sessionId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+  try {
+    await createSession(sessionUri, tokenData.accountUri);
 
     console.log(`Session created for subject ${tokenData.userInfo.sub}`);
 
     return res.status(201).json({
       data: {
         type: 'sessions',
-        id: sessionId,
         attributes: {
           firstName: tokenData.userInfo.given_name,
           lastName: tokenData.userInfo.family_name,
@@ -79,17 +76,17 @@ app.post('/auth/v1/exchange', async function(req, res) {
 
 // Called by the embed frontend on logout.
 app.delete('/auth/v1/session', async function(req, res) {
-  const sessionId = req.cookies?.mu_session_id;
+  const sessionUri = req.headers['mu-session-id'];
 
-  if (sessionId) {
+  if (sessionUri) {
     try {
-      await deleteSession(sessionId);
+      await deleteSession(sessionUri);
     } catch (e) {
       console.error('Failed to remove session from triplestore:', e);
     }
-    res.clearCookie('mu_session_id');
   }
 
+  res.clearCookie('mu_session_id');
   return res.status(204).send();
 });
 

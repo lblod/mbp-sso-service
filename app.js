@@ -2,7 +2,7 @@ import { app, errorHandler } from 'mu';
 import cookieParser from 'cookie-parser';
 import { introspectAndValidate } from './lib/acm.js';
 import { storeHandoverToken, redeemHandoverToken } from './lib/handover.js';
-import { ensureUserAccount, createSession, deleteSession } from './lib/session.js';
+import { ensureUserAccount, createSession, deleteSession, getSessionInfo } from './lib/session.js';
 import express from 'express';
 
 app.use(cookieParser());
@@ -32,6 +32,27 @@ app.post('/auth/v1/token', async function(req, res) {
     return res.status(200).json({ token: handoverToken });
   } catch (e) {
     console.error('Failed to issue handover token:', e);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Called by the embed frontend on page load to restore an existing session.
+app.get('/auth/v1/session', async function(req, res) {
+  const sessionUri = req.headers['mu-session-id'];
+  if (!sessionUri) return res.status(401).json({ error: 'Not authenticated' });
+
+  try {
+    const info = await getSessionInfo(sessionUri);
+    if (!info) return res.status(401).json({ error: 'Not authenticated' });
+
+    return res.status(200).json({
+      data: {
+        type: 'sessions',
+        attributes: { firstName: info.firstName, lastName: info.lastName },
+      },
+    });
+  } catch (e) {
+    console.error('Failed to get session info:', e);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
